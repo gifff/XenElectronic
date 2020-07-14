@@ -76,3 +76,17 @@ func (_m *CartRepository) ListProductsByCartID(cartID string) ([]entity.CartItem
 
 	return r0, r1
 }
+
+// RemoveProductFromCart provides a mock function with given fields: cartID, productID
+func (_m *CartRepository) RemoveProductFromCart(cartID string, productID int64) error {
+	ret := _m.Called(cartID, productID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, int64) error); ok {
+		r0 = rf(cartID, productID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}

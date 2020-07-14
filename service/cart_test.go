@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -116,4 +117,29 @@ func TestAddProductIntoCart(t *testing.T) {
 
 	assert.Nil(t, gotErr)
 	assert.Equal(t, wantCartItem, gotCartItem)
+}
+
+func TestRemoveProductFromCart(t *testing.T) {
+	cartRepo := &mocks.CartRepository{}
+	s := service.NewCart(cartRepo)
+
+	uuid := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+
+	cartRepo.On("RemoveProductFromCart", uuid, int64(2001)).Return(nil)
+	gotErr := s.RemoveProductFromCart(uuid, 2001)
+
+	assert.Nil(t, gotErr)
+}
+
+func TestRemoveProductFromCart_Error(t *testing.T) {
+	cartRepo := &mocks.CartRepository{}
+	s := service.NewCart(cartRepo)
+
+	uuid := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+	err := errors.New("unknown error")
+
+	cartRepo.On("RemoveProductFromCart", uuid, int64(2001)).Return(err)
+	gotErr := s.RemoveProductFromCart(uuid, 2001)
+
+	assert.Equal(t, err, gotErr)
 }

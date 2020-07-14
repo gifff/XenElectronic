@@ -30,5 +30,5 @@ func (c *Cart) AddProductIntoCart(cartID string, productID int64) (entity.CartIt
 }
 
 func (c *Cart) RemoveProductFromCart(cartID string, productID int64) error {
-	return nil
+	return c.cartRepo.RemoveProductFromCart(cartID, productID)
 }
