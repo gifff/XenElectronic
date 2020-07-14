@@ -8,7 +8,11 @@ package orders
 import (
 	"net/http"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // CheckoutHandlerFunc turns a function with the right signature into a checkout handler
@@ -55,4 +59,131 @@ func (o *Checkout) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// CheckoutBody checkout body
+//
+// swagger:model CheckoutBody
+type CheckoutBody struct {
+
+	// cart id
+	// Required: true
+	// Format: uuid
+	CartID *strfmt.UUID `json:"cart_id"`
+
+	// customer address
+	// Required: true
+	// Min Length: 1
+	CustomerAddress *string `json:"customer_address"`
+
+	// customer email
+	// Required: true
+	// Min Length: 1
+	// Format: email
+	CustomerEmail *strfmt.Email `json:"customer_email"`
+
+	// customer name
+	// Required: true
+	// Min Length: 1
+	CustomerName *string `json:"customer_name"`
+}
+
+// Validate validates this checkout body
+func (o *CheckoutBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateCartID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateCustomerAddress(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateCustomerEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateCustomerName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *CheckoutBody) validateCartID(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"cart_id", "body", o.CartID); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("body"+"."+"cart_id", "body", "uuid", o.CartID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *CheckoutBody) validateCustomerAddress(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"customer_address", "body", o.CustomerAddress); err != nil {
+		return err
+	}
+
+	if err := validate.MinLength("body"+"."+"customer_address", "body", string(*o.CustomerAddress), 1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *CheckoutBody) validateCustomerEmail(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"customer_email", "body", o.CustomerEmail); err != nil {
+		return err
+	}
+
+	if err := validate.MinLength("body"+"."+"customer_email", "body", string(*o.CustomerEmail), 1); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("body"+"."+"customer_email", "body", "email", o.CustomerEmail.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *CheckoutBody) validateCustomerName(formats strfmt.Registry) error {
+
+	if err := validate.Required("body"+"."+"customer_name", "body", o.CustomerName); err != nil {
+		return err
+	}
+
+	if err := validate.MinLength("body"+"."+"customer_name", "body", string(*o.CustomerName), 1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *CheckoutBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *CheckoutBody) UnmarshalBinary(b []byte) error {
+	var res CheckoutBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

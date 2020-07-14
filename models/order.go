@@ -17,10 +17,8 @@ import (
 // swagger:model Order
 type Order struct {
 
-	// cart id
-	// Required: true
-	// Format: uuid
-	CartID *strfmt.UUID `json:"cart_id"`
+	// cart items
+	CartItems CartItems `json:"cart_items,omitempty"`
 
 	// customer address
 	// Required: true
@@ -42,13 +40,22 @@ type Order struct {
 	// Read Only: true
 	// Format: uuid
 	ID strfmt.UUID `json:"id,omitempty"`
+
+	// payment account number
+	PaymentAccountNumber string `json:"payment_account_number,omitempty"`
+
+	// payment amount
+	PaymentAmount int64 `json:"payment_amount,omitempty"`
+
+	// payment method
+	PaymentMethod string `json:"payment_method,omitempty"`
 }
 
 // Validate validates this order
 func (m *Order) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCartID(formats); err != nil {
+	if err := m.validateCartItems(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -74,13 +81,16 @@ func (m *Order) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Order) validateCartID(formats strfmt.Registry) error {
+func (m *Order) validateCartItems(formats strfmt.Registry) error {
 
-	if err := validate.Required("cart_id", "body", m.CartID); err != nil {
-		return err
+	if swag.IsZero(m.CartItems) { // not required
+		return nil
 	}
 
-	if err := validate.FormatOf("cart_id", "body", "uuid", m.CartID.String(), formats); err != nil {
+	if err := m.CartItems.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("cart_items")
+		}
 		return err
 	}
 

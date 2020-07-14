@@ -25,7 +25,7 @@ type CheckoutCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ExtendedOrder `json:"body,omitempty"`
+	Payload *models.Order `json:"body,omitempty"`
 }
 
 // NewCheckoutCreated creates CheckoutCreated with default headers values
@@ -35,13 +35,13 @@ func NewCheckoutCreated() *CheckoutCreated {
 }
 
 // WithPayload adds the payload to the checkout created response
-func (o *CheckoutCreated) WithPayload(payload *models.ExtendedOrder) *CheckoutCreated {
+func (o *CheckoutCreated) WithPayload(payload *models.Order) *CheckoutCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the checkout created response
-func (o *CheckoutCreated) SetPayload(payload *models.ExtendedOrder) {
+func (o *CheckoutCreated) SetPayload(payload *models.Order) {
 	o.Payload = payload
 }
 

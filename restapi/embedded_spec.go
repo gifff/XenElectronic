@@ -262,7 +262,32 @@ func init() {
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Order"
+              "type": "object",
+              "required": [
+                "cart_id",
+                "customer_name",
+                "customer_email",
+                "customer_address"
+              ],
+              "properties": {
+                "cart_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "customer_address": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "customer_email": {
+                  "type": "string",
+                  "format": "email",
+                  "minLength": 1
+                },
+                "customer_name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           }
         ],
@@ -270,7 +295,7 @@ func init() {
           "201": {
             "description": "Created new order from cart",
             "schema": {
-              "$ref": "#/definitions/ExtendedOrder"
+              "$ref": "#/definitions/Order"
             }
           },
           "default": {
@@ -381,32 +406,47 @@ func init() {
         }
       }
     },
-    "ExtendedOrder": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/Order"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "cart_items": {
-              "$ref": "#/definitions/CartItems"
-            },
-            "payment_account_number": {
-              "type": "string"
-            },
-            "payment_amount": {
-              "type": "integer",
-              "format": "int64"
-            },
-            "payment_method": {
-              "type": "string"
-            }
-          }
-        }
+    "Order": {
+      "type": "object",
+      "required": [
+        "customer_name",
+        "customer_email",
+        "customer_address"
       ],
+      "properties": {
+        "cart_items": {
+          "$ref": "#/definitions/CartItems"
+        },
+        "customer_address": {
+          "type": "string",
+          "minLength": 1
+        },
+        "customer_email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 1
+        },
+        "customer_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "payment_account_number": {
+          "type": "string"
+        },
+        "payment_amount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "payment_method": {
+          "type": "string"
+        }
+      },
       "example": {
-        "cart_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         "cart_items": [
           {
             "id": 1000,
@@ -452,39 +492,6 @@ func init() {
         "payment_account_number": "232 555 8965",
         "payment_amount": 45000000,
         "payment_method": "Bank Transfer"
-      }
-    },
-    "Order": {
-      "type": "object",
-      "required": [
-        "cart_id",
-        "customer_name",
-        "customer_email",
-        "customer_address"
-      ],
-      "properties": {
-        "cart_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "customer_address": {
-          "type": "string",
-          "minLength": 1
-        },
-        "customer_email": {
-          "type": "string",
-          "format": "email",
-          "minLength": 1
-        },
-        "customer_name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "id": {
-          "type": "string",
-          "format": "uuid",
-          "readOnly": true
-        }
       }
     },
     "Product": {
@@ -769,7 +776,32 @@ func init() {
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Order"
+              "type": "object",
+              "required": [
+                "cart_id",
+                "customer_name",
+                "customer_email",
+                "customer_address"
+              ],
+              "properties": {
+                "cart_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "customer_address": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "customer_email": {
+                  "type": "string",
+                  "format": "email",
+                  "minLength": 1
+                },
+                "customer_name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           }
         ],
@@ -777,7 +809,7 @@ func init() {
           "201": {
             "description": "Created new order from cart",
             "schema": {
-              "$ref": "#/definitions/ExtendedOrder"
+              "$ref": "#/definitions/Order"
             }
           },
           "default": {
@@ -888,32 +920,47 @@ func init() {
         }
       }
     },
-    "ExtendedOrder": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/Order"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "cart_items": {
-              "$ref": "#/definitions/CartItems"
-            },
-            "payment_account_number": {
-              "type": "string"
-            },
-            "payment_amount": {
-              "type": "integer",
-              "format": "int64"
-            },
-            "payment_method": {
-              "type": "string"
-            }
-          }
-        }
+    "Order": {
+      "type": "object",
+      "required": [
+        "customer_name",
+        "customer_email",
+        "customer_address"
       ],
+      "properties": {
+        "cart_items": {
+          "$ref": "#/definitions/CartItems"
+        },
+        "customer_address": {
+          "type": "string",
+          "minLength": 1
+        },
+        "customer_email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 1
+        },
+        "customer_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "payment_account_number": {
+          "type": "string"
+        },
+        "payment_amount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "payment_method": {
+          "type": "string"
+        }
+      },
       "example": {
-        "cart_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         "cart_items": [
           {
             "id": 1000,
@@ -959,39 +1006,6 @@ func init() {
         "payment_account_number": "232 555 8965",
         "payment_amount": 45000000,
         "payment_method": "Bank Transfer"
-      }
-    },
-    "Order": {
-      "type": "object",
-      "required": [
-        "cart_id",
-        "customer_name",
-        "customer_email",
-        "customer_address"
-      ],
-      "properties": {
-        "cart_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "customer_address": {
-          "type": "string",
-          "minLength": 1
-        },
-        "customer_email": {
-          "type": "string",
-          "format": "email",
-          "minLength": 1
-        },
-        "customer_name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "id": {
-          "type": "string",
-          "format": "uuid",
-          "readOnly": true
-        }
       }
     },
     "Product": {
