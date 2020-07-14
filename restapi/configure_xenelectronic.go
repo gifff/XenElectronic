@@ -9,6 +9,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/gifff/xenelectronic/models"
@@ -56,20 +57,23 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 			return middleware.NotImplemented("operation orders.Checkout has not yet been implemented")
 		})
 	}
-	if api.CartsCreateCartHandler == nil {
-		api.CartsCreateCartHandler = carts.CreateCartHandlerFunc(func(params carts.CreateCartParams) middleware.Responder {
-			return middleware.NotImplemented("operation carts.CreateCart has not yet been implemented")
+
+	api.CartsCreateCartHandler = carts.CreateCartHandlerFunc(func(params carts.CreateCartParams) middleware.Responder {
+		cartID, err := CartService.CreateCart()
+		if err != nil {
+			return carts.NewCreateCartDefault(500).WithPayload(formatError(1000, err))
+		}
+
+		cartIDUUID := strfmt.UUID(cartID)
+		return carts.NewCreateCartOK().WithPayload(&carts.CreateCartOKBody{
+			CartID: &cartIDUUID,
 		})
-	}
+	})
 
 	api.CategoriesListCategoriesHandler = categories.ListCategoriesHandlerFunc(func(params categories.ListCategoriesParams) middleware.Responder {
 		allCategories, err := CategoryService.ListAllCategories()
 		if err != nil {
-			errMsg := err.Error()
-			return categories.NewListCategoriesDefault(500).WithPayload(&models.Error{
-				Code:    1000,
-				Message: &errMsg,
-			})
+			return categories.NewListCategoriesDefault(500).WithPayload(formatError(1000, err))
 		}
 
 		payload := make([]*models.Category, len(allCategories))
@@ -83,21 +87,38 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 		return categories.NewListCategoriesOK().WithPayload(payload)
 	})
 
-	if api.CartsListProductsInCartHandler == nil {
-		api.CartsListProductsInCartHandler = carts.ListProductsInCartHandlerFunc(func(params carts.ListProductsInCartParams) middleware.Responder {
-			return middleware.NotImplemented("operation carts.ListProductsInCart has not yet been implemented")
-		})
-	}
+	api.CartsListProductsInCartHandler = carts.ListProductsInCartHandlerFunc(func(params carts.ListProductsInCartParams) middleware.Responder {
+		cartItems, err := CartService.ListProductsInCart(params.CartID.String())
+		if err != nil {
+			return carts.NewListProductsInCartDefault(500).WithPayload(formatError(1000, err))
+		}
+
+		payload := make([]*models.CartItem, len(cartItems))
+		for i := range cartItems {
+			p := &models.Product{
+				ID:          cartItems[i].Product.ID,
+				CategoryID:  &cartItems[i].Product.CategoryID,
+				Name:        &cartItems[i].Product.Name,
+				Description: &cartItems[i].Product.Description,
+				Photo:       cartItems[i].Product.Photo,
+				Price:       &cartItems[i].Product.Price,
+			}
+
+			payload[i] = &models.CartItem{
+				ID:        cartItems[i].ID,
+				Product:   p,
+				ProductID: &cartItems[i].Product.ID,
+			}
+		}
+
+		return carts.NewListProductsInCartOK().WithPayload(payload)
+	})
 
 	api.CategoriesListProductsOfCategoryHandler = categories.ListProductsOfCategoryHandlerFunc(func(params categories.ListProductsOfCategoryParams) middleware.Responder {
 
 		products, err := CategoryService.ListProductsByCategoryID(params.CategoryID, *params.Since, *params.Limit)
 		if err != nil {
-			errMsg := err.Error()
-			return categories.NewListProductsOfCategoryDefault(500).WithPayload(&models.Error{
-				Code:    1000,
-				Message: &errMsg,
-			})
+			return categories.NewListProductsOfCategoryDefault(500).WithPayload(formatError(1000, err))
 		}
 
 		payload := make([]*models.Product, len(products))
@@ -115,11 +136,14 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 		return categories.NewListProductsOfCategoryOK().WithPayload(payload)
 	})
 
-	if api.CartsRemoveOneProductFromCartHandler == nil {
-		api.CartsRemoveOneProductFromCartHandler = carts.RemoveOneProductFromCartHandlerFunc(func(params carts.RemoveOneProductFromCartParams) middleware.Responder {
-			return middleware.NotImplemented("operation carts.RemoveOneProductFromCart has not yet been implemented")
-		})
-	}
+	api.CartsRemoveOneProductFromCartHandler = carts.RemoveOneProductFromCartHandlerFunc(func(params carts.RemoveOneProductFromCartParams) middleware.Responder {
+		err := CartService.RemoveProductFromCart(params.CartID.String(), params.ProductID)
+		if err != nil {
+			return carts.NewRemoveOneProductFromCartDefault(500).WithPayload(formatError(1000, err))
+		}
+
+		return carts.NewRemoveOneProductFromCartNoContent()
+	})
 
 	api.PreServerShutdown = func() {}
 
