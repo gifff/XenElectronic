@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	"database/sql"
 	"testing"
 
 	"github.com/gifff/xenelectronic/entity"
@@ -10,15 +11,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newDBMock() (*sqlx.DB, sqlmock.Sqlmock, error) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dbx := sqlx.NewDb(db, "sqlmock")
+	return dbx, mock, nil
+}
+
 func TestListAll(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, mock, err := newDBMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
-
-	dbx := sqlx.NewDb(db, "sqlmock")
-	defer dbx.Close()
 
 	mock.ExpectQuery("SELECT id, name FROM categories").WillReturnRows(
 		sqlmock.NewRows([]string{"id", "name"}).
@@ -27,7 +35,7 @@ func TestListAll(t *testing.T) {
 			AddRow(1010, "Smartphones"),
 	)
 
-	repo := NewCategory(dbx)
+	repo := NewCategory(db)
 	gotCategories, gotErr := repo.ListAll()
 
 	wantCategories := []entity.Category{
@@ -49,15 +57,28 @@ func TestListAll(t *testing.T) {
 	assert.Equal(t, wantCategories, gotCategories)
 }
 
-func TestListProductsByCategoryID(t *testing.T) {
-	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+func TestListAll_Error(t *testing.T) {
+	db, mock, err := newDBMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
 
-	dbx := sqlx.NewDb(db, "sqlmock")
-	defer dbx.Close()
+	mock.ExpectQuery("SELECT id, name FROM categories").WillReturnError(sql.ErrConnDone)
+
+	repo := NewCategory(db)
+	gotCategories, gotErr := repo.ListAll()
+
+	assert.Equal(t, sql.ErrConnDone, gotErr)
+	assert.Nil(t, gotCategories)
+}
+
+func TestListProductsByCategoryID(t *testing.T) {
+	db, mock, err := newDBMock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
 
 	mock.ExpectQuery("SELECT id, category_id, name, description, photo, price FROM products WHERE category_id = $1 LIMIT $2 OFFSET $3").
 		WithArgs(int64(1010), int32(5), int64(10)).
@@ -70,7 +91,7 @@ func TestListProductsByCategoryID(t *testing.T) {
 				AddRow(2222, 1010, "Samsung Galaxy S20 Ultra", "Samsung Smartphone", "", 20000000),
 		)
 
-	repo := NewCategory(dbx)
+	repo := NewCategory(db)
 	gotProducts, gotErr := repo.ListProductsByCategoryID(1010, 10, 5)
 
 	wantProducts := []entity.Product{
@@ -113,4 +134,22 @@ func TestListProductsByCategoryID(t *testing.T) {
 
 	assert.Nil(t, gotErr)
 	assert.Equal(t, wantProducts, gotProducts)
+}
+
+func TestListProductsByCategoryID_Error(t *testing.T) {
+	db, mock, err := newDBMock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	mock.ExpectQuery("SELECT id, category_id, name, description, photo, price FROM products WHERE category_id = $1 LIMIT $2 OFFSET $3").
+		WithArgs(int64(1010), int32(5), int64(10)).
+		WillReturnError(sql.ErrConnDone)
+
+	repo := NewCategory(db)
+	gotProducts, gotErr := repo.ListProductsByCategoryID(1010, 10, 5)
+
+	assert.Equal(t, sql.ErrConnDone, gotErr)
+	assert.Nil(t, gotProducts)
 }
