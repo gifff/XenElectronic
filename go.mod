@@ -11,6 +11,7 @@ require (
 	github.com/go-openapi/swag v0.19.9
 	github.com/go-openapi/validate v0.19.10
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.3.5 // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 )
