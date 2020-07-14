@@ -10,12 +10,31 @@ Build a responsive web application using React and have the following features f
 4. Customers should be able to remove the products listed on the shopping cart
 5. Customers should be able to checkout shopping cart and continue their transaction to payment
 
+## Prerequisites
+
+- Go 1.14
+- PostgreSQL 12.3
+- Make
+- [golang-migrate](https://github.com/golang-migrate/migrate)
+- [go-swagger](https://goswagger.io)
+
 ## How to run test
 
 Execute the following command:
 
 ```shell
 $ make test
+```
+
+## Migrations
+
+To setup database, first you have to create a new database in your PostgreSQL server.
+For example, a database named `xen_electronic` is created
+
+Then, using golang-migrate, execute the following command:
+
+```shell
+$ migrate -database 'postgres://user:pass@localhost:5432/xen_electronic?sslmode=disable' -path db/migrations up
 ```
 
 ## How to run
