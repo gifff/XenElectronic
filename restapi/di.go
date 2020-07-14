@@ -10,8 +10,10 @@ import (
 var (
 	CategoryRepository contract.CategoryRepository
 	CartRepository     contract.CartRepository
+	OrderRepository    contract.OrderRepository
 	CategoryService    contract.CategoryService
 	CartService        contract.CartService
+	OrderService       contract.OrderService
 
 	appConfig AppConfig
 )
@@ -30,6 +32,8 @@ func configureDependencies() {
 	postgresDB := postgresql.New(appConfig.DSN)
 	CategoryRepository = postgresql.NewCategory(postgresDB)
 	CartRepository = postgresql.NewCart(postgresDB, uuidGenerator{})
+	OrderRepository = postgresql.NewOrder(postgresDB, uuidGenerator{})
 	CategoryService = service.NewCategory(CategoryRepository)
 	CartService = service.NewCart(CartRepository)
+	OrderService = service.NewOrder(OrderRepository)
 }

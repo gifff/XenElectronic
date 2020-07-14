@@ -68,11 +68,46 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 		return carts.NewAddOneProductIntoCartOK().WithPayload(payload)
 	})
 
-	if api.OrdersCheckoutHandler == nil {
-		api.OrdersCheckoutHandler = orders.CheckoutHandlerFunc(func(params orders.CheckoutParams) middleware.Responder {
-			return middleware.NotImplemented("operation orders.Checkout has not yet been implemented")
-		})
-	}
+	api.OrdersCheckoutHandler = orders.CheckoutHandlerFunc(func(params orders.CheckoutParams) middleware.Responder {
+		order, err := OrderRepository.CheckoutFromCart(
+			params.Body.CartID.String(),
+			*params.Body.CustomerName,
+			params.Body.CustomerEmail.String(),
+			*params.Body.CustomerAddress,
+		)
+		if err != nil {
+			return orders.NewCheckoutDefault(500).WithPayload(formatError(1000, err))
+		}
+
+		custEmail := strfmt.Email(order.CustomerEmail)
+		payload := &models.Order{
+			ID:                   strfmt.UUID(order.ID),
+			CustomerName:         &order.CustomerName,
+			CustomerEmail:        &custEmail,
+			CustomerAddress:      &order.CustomerAddress,
+			PaymentAmount:        order.PaymentAmount,
+			PaymentMethod:        order.PaymentMethod,
+			PaymentAccountNumber: order.PaymentAccountNumber,
+			CartItems:            make(models.CartItems, len(order.CartItems)),
+		}
+		for i := range order.CartItems {
+			p := &models.Product{
+				ID:          order.CartItems[i].Product.ID,
+				CategoryID:  &order.CartItems[i].Product.CategoryID,
+				Name:        &order.CartItems[i].Product.Name,
+				Description: &order.CartItems[i].Product.Description,
+				Photo:       order.CartItems[i].Product.Photo,
+				Price:       &order.CartItems[i].Product.Price,
+			}
+
+			payload.CartItems[i] = &models.CartItem{
+				ID:        order.CartItems[i].ID,
+				Product:   p,
+				ProductID: &order.CartItems[i].Product.ID,
+			}
+		}
+		return orders.NewCheckoutCreated().WithPayload(payload)
+	})
 
 	api.CartsCreateCartHandler = carts.CreateCartHandlerFunc(func(params carts.CreateCartParams) middleware.Responder {
 		cartID, err := CartService.CreateCart()
