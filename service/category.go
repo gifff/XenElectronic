@@ -20,3 +20,7 @@ type Category struct {
 func (c *Category) ListAllCategories() ([]entity.Category, error) {
 	return c.categoryRepo.ListAll()
 }
+
+func (c *Category) ListProductsByCategoryID(categoryID, since int64, limit int32) ([]entity.Product, error) {
+	return c.categoryRepo.ListProductsByCategoryID(categoryID, since, limit)
+}

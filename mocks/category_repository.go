@@ -34,3 +34,26 @@ func (_m *CategoryRepository) ListAll() ([]entity.Category, error) {
 
 	return r0, r1
 }
+
+// ListProductsByCategoryID provides a mock function with given fields: categoryID, since, limit
+func (_m *CategoryRepository) ListProductsByCategoryID(categoryID int64, since int64, limit int32) ([]entity.Product, error) {
+	ret := _m.Called(categoryID, since, limit)
+
+	var r0 []entity.Product
+	if rf, ok := ret.Get(0).(func(int64, int64, int32) []entity.Product); ok {
+		r0 = rf(categoryID, since, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]entity.Product)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64, int64, int32) error); ok {
+		r1 = rf(categoryID, since, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
