@@ -86,5 +86,13 @@ func (repo *cartRepository) AddProductIntoCart(cartID string, productID int64) (
 }
 
 func (repo *cartRepository) RemoveProductFromCart(cartID string, productID int64) error {
+	var id int64
+
+	row := repo.db.QueryRowx("DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2 RETURNING id", cartID, productID)
+	err := row.Scan(&id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

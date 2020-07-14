@@ -239,3 +239,59 @@ func TestListProductsByCartID_Error(t *testing.T) {
 	assert.Equal(t, sql.ErrConnDone, gotErr)
 	assert.Equal(t, wantCartItems, gotCartItems)
 }
+
+func TestRemoveProductFromCart(t *testing.T) {
+	u := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+
+	testCases := []struct {
+		name      string
+		cartID    string
+		productID int64
+		dbMockFn  func(mock sqlmock.Sqlmock)
+		wantErr   error
+	}{
+		{
+			name:      "success",
+			cartID:    u,
+			productID: 2001,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2 RETURNING id").
+					WithArgs(u, int64(2001)).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id"}).
+							AddRow(3456),
+					)
+			},
+		},
+		{
+			name:      "error when delete from cart items",
+			cartID:    u,
+			productID: 2001,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2 RETURNING id").
+					WithArgs(u, int64(2001)).
+					WillReturnError(sql.ErrNoRows)
+			},
+			wantErr: sql.ErrNoRows,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := newDBMock()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+
+			if tc.dbMockFn != nil {
+				tc.dbMockFn(mock)
+			}
+
+			repo := NewCart(db, nil)
+			gotErr := repo.RemoveProductFromCart(tc.cartID, tc.productID)
+
+			assert.Equal(t, tc.wantErr, gotErr)
+		})
+	}
+}
