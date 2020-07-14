@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/gifff/xenelectronic/entity"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,4 +59,98 @@ func TestCreateCart_Error(t *testing.T) {
 
 	assert.Equal(t, wantErr, gotErr)
 	assert.Equal(t, wantCartID, gotCartID)
+}
+
+func TestAddProductIntoCart(t *testing.T) {
+	u := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+
+	testCases := []struct {
+		name         string
+		cartID       string
+		productID    int64
+		dbMockFn     func(mock sqlmock.Sqlmock)
+		wantCartItem entity.CartItem
+		wantErr      error
+	}{
+		{
+			name:      "success",
+			cartID:    u,
+			productID: 2001,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("INSERT INTO cart_items(cart_id, product_id) VALUES($1, $2) RETURNING id").
+					WithArgs(u, int64(2001)).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id"}).
+							AddRow(3456),
+					)
+				mock.ExpectQuery("SELECT id, category_id, name, description, photo, price FROM products WHERE id = $1").
+					WithArgs(int64(2001)).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id", "category_id", "name", "description", "photo", "price"}).
+							AddRow(2001, 1010, "iPhone XR", "Apple Smartphone", "", 11000000),
+					)
+			},
+			wantCartItem: entity.CartItem{
+				ID:     3456,
+				CartID: u,
+				Product: entity.Product{
+					ID:          2001,
+					CategoryID:  1010,
+					Name:        "iPhone XR",
+					Description: "Apple Smartphone",
+					Price:       11000000,
+				},
+			},
+		},
+		{
+			name:      "error when insert into cart items",
+			cartID:    u,
+			productID: 2001,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("INSERT INTO cart_items(cart_id, product_id) VALUES($1, $2) RETURNING id").
+					WithArgs(u, int64(2001)).
+					WillReturnError(sql.ErrConnDone)
+			},
+			wantCartItem: entity.CartItem{},
+			wantErr:      sql.ErrConnDone,
+		},
+		{
+			name:      "error when select from products",
+			cartID:    u,
+			productID: 2001,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("INSERT INTO cart_items(cart_id, product_id) VALUES($1, $2) RETURNING id").
+					WithArgs(u, int64(2001)).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id"}).
+							AddRow(3456),
+					)
+				mock.ExpectQuery("SELECT id, category_id, name, description, photo, price FROM products WHERE id = $1").
+					WithArgs(int64(2001)).
+					WillReturnError(sql.ErrConnDone)
+			},
+			wantCartItem: entity.CartItem{},
+			wantErr:      sql.ErrConnDone,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := newDBMock()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+
+			if tc.dbMockFn != nil {
+				tc.dbMockFn(mock)
+			}
+
+			repo := NewCart(db, nil)
+			gotCartItem, gotErr := repo.AddProductIntoCart(tc.cartID, tc.productID)
+
+			assert.Equal(t, tc.wantErr, gotErr)
+			assert.Equal(t, tc.wantCartItem, gotCartItem)
+		})
+	}
 }
