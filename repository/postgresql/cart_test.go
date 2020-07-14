@@ -154,3 +154,88 @@ func TestAddProductIntoCart(t *testing.T) {
 		})
 	}
 }
+
+func TestListProductsByCartID(t *testing.T) {
+	db, mock, err := newDBMock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	u := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+
+	mock.ExpectQuery(`SELECT ci.id, ci.cart_id, p.id, p.category_id, p.name, p.description, p.photo, p.price FROM products p
+	JOIN cart_items ci ON p.id = ci.product_id
+	WHERE ci.cart_id = $1`).
+		WithArgs(u).
+		WillReturnRows(
+			sqlmock.NewRows([]string{"ci.id", "ci.cart_id", "p.id", "p.category_id", "p.name", "p.description", "p.photo", "p.price"}).
+				AddRow(3456, u, 2001, 1010, "iPhone XR", "Apple Smartphone", "", 11000000).
+				AddRow(3457, u, 2010, 1010, "iPhone XS", "Apple Smartphone", "", 15000000).
+				AddRow(3458, u, 2020, 1010, "iPhone 11", "Apple Smartphone", "", 13000000),
+		)
+	repo := NewCart(db, nil)
+	gotCartItems, gotErr := repo.ListProductsByCartID(u)
+
+	wantCartItems := []entity.CartItem{
+		{
+			ID:     3456,
+			CartID: u,
+			Product: entity.Product{
+				ID:          2001,
+				CategoryID:  1010,
+				Name:        "iPhone XR",
+				Description: "Apple Smartphone",
+				Price:       11000000,
+			},
+		},
+		{
+			ID:     3457,
+			CartID: u,
+			Product: entity.Product{
+				ID:          2010,
+				CategoryID:  1010,
+				Name:        "iPhone XS",
+				Description: "Apple Smartphone",
+				Price:       15000000,
+			},
+		},
+		{
+			ID:     3458,
+			CartID: u,
+			Product: entity.Product{
+				ID:          2020,
+				CategoryID:  1010,
+				Name:        "iPhone 11",
+				Description: "Apple Smartphone",
+				Price:       13000000,
+			},
+		},
+	}
+
+	assert.Nil(t, gotErr)
+	assert.Equal(t, wantCartItems, gotCartItems)
+}
+
+func TestListProductsByCartID_Error(t *testing.T) {
+	db, mock, err := newDBMock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	u := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+
+	mock.ExpectQuery(`SELECT ci.id, ci.cart_id, p.id, p.category_id, p.name, p.description, p.photo, p.price FROM products p
+	JOIN cart_items ci ON p.id = ci.product_id
+	WHERE ci.cart_id = $1`).
+		WithArgs(u).
+		WillReturnError(sql.ErrConnDone)
+	repo := NewCart(db, nil)
+	gotCartItems, gotErr := repo.ListProductsByCartID(u)
+
+	wantCartItems := ([]entity.CartItem)(nil)
+
+	assert.Equal(t, sql.ErrConnDone, gotErr)
+	assert.Equal(t, wantCartItems, gotCartItems)
+}

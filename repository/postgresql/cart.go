@@ -27,7 +27,35 @@ func (repo *cartRepository) CreateCart() (string, error) {
 }
 
 func (repo *cartRepository) ListProductsByCartID(cartID string) ([]entity.CartItem, error) {
-	return nil, nil
+	cartItems := []entity.CartItem{}
+
+	rows, err := repo.db.Queryx(`SELECT ci.id, ci.cart_id, p.id, p.category_id, p.name, p.description, p.photo, p.price FROM products p
+	JOIN cart_items ci ON p.id = ci.product_id
+	WHERE ci.cart_id = $1`, cartID)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		cartItem := entity.CartItem{}
+		err := rows.Scan(
+			&cartItem.ID,
+			&cartItem.CartID,
+			&cartItem.Product.ID,
+			&cartItem.Product.CategoryID,
+			&cartItem.Product.Name,
+			&cartItem.Product.Description,
+			&cartItem.Product.Photo,
+			&cartItem.Product.Price,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		cartItems = append(cartItems, cartItem)
+	}
+
+	return cartItems, nil
 }
 
 func (repo *cartRepository) AddProductIntoCart(cartID string, productID int64) (entity.CartItem, error) {
