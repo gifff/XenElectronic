@@ -255,7 +255,7 @@ func TestRemoveProductFromCart(t *testing.T) {
 			cartID:    u,
 			productID: 2001,
 			dbMockFn: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery("DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2 RETURNING id").
+				mock.ExpectQuery("DELETE FROM cart_items WHERE id = (SELECT id FROM cart_items WHERE cart_id = $1 AND product_id = $2 LIMIT 1) RETURNING id").
 					WithArgs(u, int64(2001)).
 					WillReturnRows(
 						sqlmock.NewRows([]string{"id"}).
@@ -268,7 +268,7 @@ func TestRemoveProductFromCart(t *testing.T) {
 			cartID:    u,
 			productID: 2001,
 			dbMockFn: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery("DELETE FROM cart_items WHERE cart_id = $1 AND product_id = $2 RETURNING id").
+				mock.ExpectQuery("DELETE FROM cart_items WHERE id = (SELECT id FROM cart_items WHERE cart_id = $1 AND product_id = $2 LIMIT 1) RETURNING id").
 					WithArgs(u, int64(2001)).
 					WillReturnError(sql.ErrNoRows)
 			},
