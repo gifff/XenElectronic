@@ -26,7 +26,7 @@ func (c *Cart) ListProductsInCart(cartID string) ([]entity.CartItem, error) {
 }
 
 func (c *Cart) AddProductIntoCart(cartID string, productID int64) (entity.CartItem, error) {
-	return entity.CartItem{}, nil
+	return c.cartRepo.AddProductIntoCart(cartID, productID)
 }
 
 func (c *Cart) RemoveProductFromCart(cartID string, productID int64) error {

@@ -12,6 +12,27 @@ type CartRepository struct {
 	mock.Mock
 }
 
+// AddProductIntoCart provides a mock function with given fields: cartID, productID
+func (_m *CartRepository) AddProductIntoCart(cartID string, productID int64) (entity.CartItem, error) {
+	ret := _m.Called(cartID, productID)
+
+	var r0 entity.CartItem
+	if rf, ok := ret.Get(0).(func(string, int64) entity.CartItem); ok {
+		r0 = rf(cartID, productID)
+	} else {
+		r0 = ret.Get(0).(entity.CartItem)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, int64) error); ok {
+		r1 = rf(cartID, productID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateCart provides a mock function with given fields:
 func (_m *CartRepository) CreateCart() (string, error) {
 	ret := _m.Called()

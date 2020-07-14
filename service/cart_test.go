@@ -83,3 +83,37 @@ func TestListProductsInCart(t *testing.T) {
 	assert.Nil(t, gotErr)
 	assert.Equal(t, wantCartItems, gotCartItems)
 }
+
+func TestAddProductIntoCart(t *testing.T) {
+	cartRepo := &mocks.CartRepository{}
+	s := service.NewCart(cartRepo)
+
+	uuid := "aaaaaaaa-bbbb-cccc-dddd-eeeedeadbeef"
+
+	cartRepo.On("AddProductIntoCart", uuid, int64(2001)).Return(entity.CartItem{
+		ID:     3456,
+		CartID: uuid,
+		Product: entity.Product{
+			ID:          2001,
+			CategoryID:  1010,
+			Name:        "iPhone XR",
+			Description: "Apple Smartphone",
+			Price:       11000000,
+		},
+	}, nil)
+	gotCartItem, gotErr := s.AddProductIntoCart(uuid, 2001)
+	wantCartItem := entity.CartItem{
+		ID:     3456,
+		CartID: uuid,
+		Product: entity.Product{
+			ID:          2001,
+			CategoryID:  1010,
+			Name:        "iPhone XR",
+			Description: "Apple Smartphone",
+			Price:       11000000,
+		},
+	}
+
+	assert.Nil(t, gotErr)
+	assert.Equal(t, wantCartItem, gotCartItem)
+}
