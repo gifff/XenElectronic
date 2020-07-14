@@ -1,9 +1,10 @@
-all: test
+all: test build run
+
+build:
 	go build -o out/xenelectronic-server cmd/xenelectronic-server/main.go
-	./out/xenelectronic-server --port 9000
 
 run:
-	go run cmd/xenelectronic-server/main.go --port 9000
+	./out/xenelectronic-server --port 9000
 
 test:
 	set -o pipefail && \
