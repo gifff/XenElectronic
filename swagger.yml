@@ -125,6 +125,10 @@ paths:
           description: add one product into the cart
           schema:
             $ref: "#/definitions/CartItem"
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/Error"
   /carts/{cart_id}/products/{product_id}:
     delete:
       description: Delete a Product from cart

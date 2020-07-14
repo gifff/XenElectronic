@@ -119,6 +119,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/CartItem"
             }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -619,6 +625,12 @@ func init() {
             "description": "add one product into the cart",
             "schema": {
               "$ref": "#/definitions/CartItem"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }

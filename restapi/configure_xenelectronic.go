@@ -47,11 +47,27 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	if api.CartsAddOneProductIntoCartHandler == nil {
-		api.CartsAddOneProductIntoCartHandler = carts.AddOneProductIntoCartHandlerFunc(func(params carts.AddOneProductIntoCartParams) middleware.Responder {
-			return middleware.NotImplemented("operation carts.AddOneProductIntoCart has not yet been implemented")
-		})
-	}
+	api.CartsAddOneProductIntoCartHandler = carts.AddOneProductIntoCartHandlerFunc(func(params carts.AddOneProductIntoCartParams) middleware.Responder {
+		cartItem, err := CartService.AddProductIntoCart(params.CartID.String(), *params.Body.ProductID)
+		if err != nil {
+			return carts.NewAddOneProductIntoCartDefault(500).WithPayload(formatError(1000, err))
+		}
+
+		payload := &models.CartItem{
+			ID: cartItem.ID,
+			Product: &models.Product{
+				ID:          cartItem.Product.ID,
+				CategoryID:  &cartItem.Product.CategoryID,
+				Name:        &cartItem.Product.Name,
+				Description: &cartItem.Product.Description,
+				Photo:       cartItem.Product.Photo,
+				Price:       &cartItem.Product.Price,
+			},
+			ProductID: &cartItem.Product.ID,
+		}
+		return carts.NewAddOneProductIntoCartOK().WithPayload(payload)
+	})
+
 	if api.OrdersCheckoutHandler == nil {
 		api.OrdersCheckoutHandler = orders.CheckoutHandlerFunc(func(params orders.CheckoutParams) middleware.Responder {
 			return middleware.NotImplemented("operation orders.Checkout has not yet been implemented")

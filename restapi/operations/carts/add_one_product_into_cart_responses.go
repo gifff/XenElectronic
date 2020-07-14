@@ -56,3 +56,61 @@ func (o *AddOneProductIntoCartOK) WriteResponse(rw http.ResponseWriter, producer
 		}
 	}
 }
+
+/*AddOneProductIntoCartDefault generic error response
+
+swagger:response addOneProductIntoCartDefault
+*/
+type AddOneProductIntoCartDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewAddOneProductIntoCartDefault creates AddOneProductIntoCartDefault with default headers values
+func NewAddOneProductIntoCartDefault(code int) *AddOneProductIntoCartDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &AddOneProductIntoCartDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the add one product into cart default response
+func (o *AddOneProductIntoCartDefault) WithStatusCode(code int) *AddOneProductIntoCartDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the add one product into cart default response
+func (o *AddOneProductIntoCartDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the add one product into cart default response
+func (o *AddOneProductIntoCartDefault) WithPayload(payload *models.Error) *AddOneProductIntoCartDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the add one product into cart default response
+func (o *AddOneProductIntoCartDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *AddOneProductIntoCartDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
