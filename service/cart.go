@@ -22,7 +22,7 @@ func (c *Cart) CreateCart() (string, error) {
 }
 
 func (c *Cart) ListProductsInCart(cartID string) ([]entity.CartItem, error) {
-	return nil, nil
+	return c.cartRepo.ListProductsByCartID(cartID)
 }
 
 func (c *Cart) AddProductIntoCart(cartID string, productID int64) (entity.CartItem, error) {
