@@ -212,6 +212,7 @@ func init() {
           {
             "type": "integer",
             "format": "int64",
+            "default": 0,
             "name": "since",
             "in": "query"
           },
@@ -712,6 +713,7 @@ func init() {
           {
             "type": "integer",
             "format": "int64",
+            "default": 0,
             "name": "since",
             "in": "query"
           },

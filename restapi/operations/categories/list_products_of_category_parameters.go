@@ -23,10 +23,13 @@ func NewListProductsOfCategoryParams() ListProductsOfCategoryParams {
 		// initialize parameters with default values
 
 		limitDefault = int32(20)
+		sinceDefault = int64(0)
 	)
 
 	return ListProductsOfCategoryParams{
 		Limit: &limitDefault,
+
+		Since: &sinceDefault,
 	}
 }
 
@@ -51,6 +54,7 @@ type ListProductsOfCategoryParams struct {
 	Limit *int32
 	/*
 	  In: query
+	  Default: 0
 	*/
 	Since *int64
 }
@@ -139,6 +143,7 @@ func (o *ListProductsOfCategoryParams) bindSince(rawData []string, hasKey bool, 
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewListProductsOfCategoryParams()
 		return nil
 	}
 
