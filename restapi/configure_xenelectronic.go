@@ -9,7 +9,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 
+	"github.com/gifff/xenelectronic/models"
 	"github.com/gifff/xenelectronic/restapi/operations"
 	"github.com/gifff/xenelectronic/restapi/operations/carts"
 	"github.com/gifff/xenelectronic/restapi/operations/categories"
@@ -19,10 +21,18 @@ import (
 //go:generate swagger generate server --target ../../xenelectronic --name Xenelectronic --spec ../swagger.yml
 
 func configureFlags(api *operations.XenelectronicAPI) {
-	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{
+		{
+			ShortDescription: "Server Options",
+			LongDescription:  "Server Options",
+			Options:          &appConfig,
+		},
+	}
 }
 
 func configureAPI(api *operations.XenelectronicAPI) http.Handler {
+	configureDependencies()
+
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -51,11 +61,28 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 			return middleware.NotImplemented("operation carts.CreateCart has not yet been implemented")
 		})
 	}
-	if api.CategoriesListCategoriesHandler == nil {
-		api.CategoriesListCategoriesHandler = categories.ListCategoriesHandlerFunc(func(params categories.ListCategoriesParams) middleware.Responder {
-			return middleware.NotImplemented("operation categories.ListCategories has not yet been implemented")
-		})
-	}
+
+	api.CategoriesListCategoriesHandler = categories.ListCategoriesHandlerFunc(func(params categories.ListCategoriesParams) middleware.Responder {
+		allCategories, err := CategoryService.ListAllCategories()
+		if err != nil {
+			errMsg := err.Error()
+			return categories.NewListCategoriesDefault(500).WithPayload(&models.Error{
+				Code:    1000,
+				Message: &errMsg,
+			})
+		}
+
+		payload := make([]*models.Category, len(allCategories))
+		for i := range allCategories {
+			payload[i] = &models.Category{
+				ID:   allCategories[i].ID,
+				Name: &allCategories[i].Name,
+			}
+		}
+
+		return categories.NewListCategoriesOK().WithPayload(payload)
+	})
+
 	if api.CartsListProductsInCartHandler == nil {
 		api.CartsListProductsInCartHandler = carts.ListProductsInCartHandlerFunc(func(params carts.ListProductsInCartParams) middleware.Responder {
 			return middleware.NotImplemented("operation carts.ListProductsInCart has not yet been implemented")
