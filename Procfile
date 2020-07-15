@@ -1,1 +1,1 @@
-web: bin/xenelectronic-server --port $PORT --dsn $DATABASE_URL
+web: bin/xenelectronic-server --host 0.0.0.0
