@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -72,13 +71,13 @@ function App() {
         </ListSubheader>
       }>
         {categories.map(category => (
-          <ListItem
-            button
+          <ListItemLink
+            to={`/categories/${category.id}`}
             key={category.name}
             selected={category.id === selectedCategory}
             onClick={() => { setSelectedCategory(category.id) }}>
             <ListItemText primary={category.name} />
-          </ListItem>
+          </ListItemLink>
         ))}
       </List>
     </React.Fragment>
@@ -90,7 +89,10 @@ function App() {
         <ResponsiveDrawer title="XenElectronic" drawer={drawer}>
           <Switch>
             <Route exact path="/">
-              <ProductList categoryId={selectedCategory} />
+              <Typography variant="body1">Select category first</Typography>
+            </Route>
+            <Route path="/categories/:categoryId">
+              <ProductList />
             </Route>
             <Route path="*">
               <Typography variant="body1">The page you're looking for is not found</Typography>

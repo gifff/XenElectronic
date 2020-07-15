@@ -12,9 +12,10 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 
 import Product from '../../lib/model/Product';
+import { useParams } from 'react-router-dom';
 
 interface Props {
-  categoryId: number
+  categoryId?: number
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -34,11 +35,13 @@ const useStyles = makeStyles((theme) => ({
 export default function ProductList(props: Props) {
   const classes = useStyles();
   const [products, setProducts] = useState<Product[]>([]);
-  const [categoryId, setCategoryId] = useState<number>(0);
+  const [previousCategoryId, setPreviousCategoryId] = useState<number>(0);
+  const { categoryId:categoryIdParam } = useParams();
+  const categoryId: number = isNaN(categoryIdParam) ? 0 : Number(categoryIdParam);
 
   useEffect(() => {
-    if (props.categoryId > 0 && categoryId !== props.categoryId) {
-      client.listProductByCategory(props.categoryId)
+    if (categoryId > 0 && previousCategoryId !== categoryId) {
+      client.listProductByCategory(categoryId)
         .then(response => response.json())
         .then(response => {
           if (Array.isArray(response)) {
@@ -51,7 +54,7 @@ export default function ProductList(props: Props) {
               product.price,
             ));
             setProducts(newProducts);
-            setCategoryId(props.categoryId);
+            setPreviousCategoryId(categoryId);
           }
         })
     }
@@ -88,7 +91,7 @@ export default function ProductList(props: Props) {
             </Grid>
           )) : (
             <Grid item xs={12}>
-              <Typography variant='body1'>Select category first</Typography>
+              <Typography variant="body1">Select category first</Typography>
             </Grid>
           )
       }

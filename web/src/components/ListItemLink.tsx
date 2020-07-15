@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, MouseEventHandler } from 'react';
 
 import ListItem from '@material-ui/core/ListItem';
 import {
@@ -8,11 +8,13 @@ import {
 
 interface ListItemLinkProps {
   children?: ReactNode;
+  selected?: boolean;
   to: string;
+  onClick?: MouseEventHandler<HTMLAnchorElement>
 }
 
 export default function ListItemLink(props: ListItemLinkProps) {
-  const { children, to } = props;
+  const { children, selected, to, onClick } = props;
 
   const renderLink = React.useMemo(
     () => React.forwardRef<any, Omit<RouterLinkProps, 'to'>>((itemProps, ref) => (
@@ -23,7 +25,7 @@ export default function ListItemLink(props: ListItemLinkProps) {
 
   return (
     <li>
-      <ListItem button component={renderLink}>
+      <ListItem button component={renderLink} selected={selected} onClick={onClick} >
         {children}
       </ListItem>
     </li>
