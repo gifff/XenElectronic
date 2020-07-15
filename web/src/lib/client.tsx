@@ -51,6 +51,15 @@ class Client {
       }
     })
   }
+
+  removeProductFromCart(cartId: string, productId: number): Promise<Response> {
+    return fetch(`${this.baseUrl}/carts/${cartId}/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/xenelectronic.v1+json'
+      },
+    })
+  }
 }
 
 export default new Client(config.API_BASE_URL);

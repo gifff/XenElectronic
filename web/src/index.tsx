@@ -4,11 +4,19 @@ import { CookiesProvider } from 'react-cookie';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import { SnackbarProvider } from 'notistack'
 
 ReactDOM.render(
   <React.StrictMode>
     <CookiesProvider>
-      <App />
+      <SnackbarProvider
+        maxSnack={3}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}>
+        <App />
+      </SnackbarProvider>
     </CookiesProvider>
   </React.StrictMode>,
   document.getElementById('root')

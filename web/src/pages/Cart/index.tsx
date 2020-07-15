@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import client from '../../lib/client';
 
 import Button from '@material-ui/core/Button';
+import DeleteIcon from '@material-ui/icons/Delete';
 import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
 import LocalMallIcon from '@material-ui/icons/LocalMall';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -13,6 +15,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, CircularProgress } from '@material-ui/core';
+import { useSnackbar } from 'notistack';
 
 import CartItem from '../../lib/model/CartItem';
 import Product from '../../lib/model/Product';
@@ -34,7 +37,9 @@ const currencyFormatter = new Intl.NumberFormat('id-ID', {
 
 export default function Cart() {
   const classes = useStyles();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItemIdInDeletion, setCartItemIdInDeletion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFetched, setIsFetched] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
@@ -73,6 +78,36 @@ export default function Cart() {
     }
   }, [isLoading, isFetched, cartId]);
 
+  const removeProductFromCart = (productId: number, cartItemId: number) => {
+    if (cartItemIdInDeletion !== null) {
+      enqueueSnackbar("Too fast! you're still deleting another one", {
+        autoHideDuration: 3000,
+        key: 'concurrent_delete',
+        variant: 'warning',
+        preventDuplicate: true,
+      })
+      return;
+    }
+    setCartItemIdInDeletion(cartItemId);
+    client.removeProductFromCart(cartId, productId)
+      .then(response => {
+        if (response.ok) {
+          setIsFetched(false);
+        }
+      })
+      .catch(() => {
+        enqueueSnackbar('Sorry, something is broken', {
+          autoHideDuration: 3000,
+          variant: 'error',
+          preventDuplicate: true,
+        })
+      })
+      .finally(() => {
+        setCartItemIdInDeletion(null);
+        closeSnackbar('concurrent_delete');
+      })
+  }
+
   const loadingContent = (
     <Grid item xs={12}>
       <CircularProgress />
@@ -88,17 +123,27 @@ export default function Cart() {
           <Table className={classes.table} aria-label="spanning table">
             <TableHead>
               <TableRow>
-                <TableCell>No.</TableCell>
+                <TableCell size="small">No.</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Price</TableCell>
+                <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               {cartItems.map((cartItem, index) => (
-                <TableRow key={cartItem.product.name}>
-                  <TableCell>{index + 1}</TableCell>
+                <TableRow key={`${cartItem.product.name}_${cartItem.id}`}>
+                  <TableCell size="small">{index + 1}</TableCell>
                   <TableCell align="left">{cartItem.product.name}</TableCell>
                   <TableCell align="left">{currencyFormatter.format(cartItem.product.price)}</TableCell>
+                  <TableCell align="right" size="small">
+                    {
+                      cartItemIdInDeletion === cartItem.id ? <CircularProgress color="secondary" /> : (
+                        <IconButton onClick={() => removeProductFromCart(cartItem.product.id, cartItem.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      )
+                    }
+                  </TableCell>
                 </TableRow>
               ))}
               <TableRow>
@@ -121,7 +166,7 @@ export default function Cart() {
           Checkout
         </Button>
       </Grid>
-    </React.Fragment>
+    </React.Fragment >
   );
 
   const errorContent = (
