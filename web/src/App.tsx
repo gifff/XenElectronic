@@ -10,10 +10,19 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import Typography from '@material-ui/core/Typography';
 import ResponsiveDrawer from './components/ResponsiveDrawer';
 import { useCookies } from 'react-cookie';
-import ProductList from './pages/ProductList';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+} from 'react-router-dom';
 
 import HomeIcon from '@material-ui/icons/Home';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+
+import ProductList from './pages/ProductList';
+
+import ListItemLink from './components/ListItemLink';
+
 import client from './lib/client';
 import Category from './lib/model/Category';
 
@@ -47,14 +56,14 @@ function App() {
   const drawer = (
     <React.Fragment>
       <List>
-        <ListItem button key={"Home"}>
+        <ListItemLink to="/" key={"Home"}>
           <ListItemIcon><HomeIcon /></ListItemIcon>
           <ListItemText primary={"Home"} />
-        </ListItem>
-        <ListItem button key={"Cart"}>
+        </ListItemLink>
+        <ListItemLink to="/cart" key={"Cart"}>
           <ListItemIcon><ShoppingCartIcon /></ListItemIcon>
           <ListItemText primary={"Cart"} />
-        </ListItem>
+        </ListItemLink>
         <Divider />
       </List>
       <List subheader={
@@ -76,17 +85,20 @@ function App() {
   );
 
   return (
-    <Container maxWidth="lg">
-      <ResponsiveDrawer title="XenElectronic" drawer={drawer}>
-        {
-          selectedCategory > 0 ? (
-            <ProductList categoryId={selectedCategory} />
-          ) : (
-              <Typography variant='body1'>Select category first</Typography>
-            )
-        }
-      </ResponsiveDrawer>
-    </Container>
+    <Router>
+      <Container maxWidth="lg">
+        <ResponsiveDrawer title="XenElectronic" drawer={drawer}>
+          <Switch>
+            <Route exact path="/">
+              <ProductList categoryId={selectedCategory} />
+            </Route>
+            <Route path="*">
+              <Typography variant="body1">The page you're looking for is not found</Typography>
+            </Route>
+          </Switch>
+        </ResponsiveDrawer>
+      </Container>
+    </Router>
   );
 }
 
