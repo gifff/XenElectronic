@@ -32,11 +32,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
+const currencyFormatter = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+})
+
 export default function ProductList(props: Props) {
   const classes = useStyles();
   const [products, setProducts] = useState<Product[]>([]);
   const [previousCategoryId, setPreviousCategoryId] = useState<number>(0);
-  const { categoryId:categoryIdParam } = useParams();
+  const { categoryId: categoryIdParam } = useParams();
   const categoryId: number = isNaN(categoryIdParam) ? 0 : Number(categoryIdParam);
 
   useEffect(() => {
@@ -77,7 +82,10 @@ export default function ProductList(props: Props) {
                     <Typography gutterBottom variant="h5" component="h2">
                       {product.name}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" component="p">
+                    <Typography variant="body2" color="textPrimary" component="p" gutterBottom>
+                      {currencyFormatter.format(product.price)}
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary" component="p">
                       {product.description}
                     </Typography>
                   </CardContent>
