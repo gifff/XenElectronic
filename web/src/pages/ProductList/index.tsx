@@ -15,10 +15,6 @@ import Product from '../../lib/model/Product';
 import { useParams } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
-interface Props {
-  categoryId?: number
-}
-
 const useStyles = makeStyles((theme) => ({
   paper: {
     padding: theme.spacing(2),
@@ -38,7 +34,7 @@ const currencyFormatter = new Intl.NumberFormat('id-ID', {
   currency: 'IDR',
 })
 
-export default function ProductList(props: Props) {
+export default function ProductList() {
   const classes = useStyles();
   const [products, setProducts] = useState<Product[]>([]);
   const [previousCategoryId, setPreviousCategoryId] = useState<number>(0);
@@ -76,7 +72,7 @@ export default function ProductList(props: Props) {
           setPreviousCategoryId(categoryId);
         })
     }
-  });
+  }, [isLoading, categoryId, previousCategoryId]);
 
   const addProductToCart = (productId: number) => {
     client.addProductToCart(cartId, productId)
