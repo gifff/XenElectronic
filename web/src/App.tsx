@@ -24,6 +24,7 @@ import ListItemLink from './components/ListItemLink';
 
 import client from './lib/client';
 import Category from './lib/model/Category';
+import Cart from './pages/Cart';
 
 function App() {
   const [cookies, setCookie] = useCookies(['cartId']);
@@ -90,6 +91,9 @@ function App() {
           <Switch>
             <Route exact path="/">
               <Typography variant="body1">Select category first</Typography>
+            </Route>
+            <Route exact path="/cart">
+              <Cart />
             </Route>
             <Route path="/categories/:categoryId">
               <ProductList />

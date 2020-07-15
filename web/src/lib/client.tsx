@@ -42,6 +42,15 @@ class Client {
       body: JSON.stringify({ product_id: productId }),
     })
   }
+
+  listProductsInCart(cartId: string): Promise<Response> {
+    return fetch(`${this.baseUrl}/carts/${cartId}/products`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/xenelectronic.v1+json'
+      }
+    })
+  }
 }
 
 export default new Client(config.API_BASE_URL);
