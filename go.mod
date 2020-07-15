@@ -15,6 +15,7 @@ require (
 	github.com/jackc/pgx/v4 v4.7.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jmoiron/sqlx v1.2.0
+	github.com/rs/cors v1.7.0
 	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.3.5 // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
