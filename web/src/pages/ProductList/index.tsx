@@ -79,7 +79,7 @@ export default function ProductList() {
   };
 
   const loadingContent = (
-    <Grid item xs={12}>
+    <Grid item container justify="center" xs={12}>
       <CircularProgress />
     </Grid>
   );
@@ -115,13 +115,13 @@ export default function ProductList() {
   ));
 
   const invalidCategoryContent = (
-    <Grid item xs={12}>
+    <Grid item container justify="center" xs={12}>
       <Typography variant="body1">Select category first</Typography>
     </Grid>
   );
 
   const errorContent = (
-    <Grid item xs={12}>
+    <Grid item container justify="center" xs={12}>
       <Typography variant="body1" color="error">Sorry, something is broken</Typography>
     </Grid>
   );
