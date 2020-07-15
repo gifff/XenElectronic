@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import ResponsiveDrawer from './components/ResponsiveDrawer';
 import { makeStyles } from '@material-ui/core';
+import { useCookies } from 'react-cookie';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -16,6 +17,22 @@ const useStyles = makeStyles((theme) => ({
 
 function App() {
   const classes = useStyles();
+  const [cookies, setCookie] = useCookies(['cartId']);
+
+  useEffect(() => {
+    if (cookies.cartId === null || cookies.cartId === undefined || cookies.cartId === '') {
+      fetch('https://xenelectronic.herokuapp.com/carts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/xenelectronic.v1+json'
+        }
+      })
+        .then(response => response.json())
+        .then(response => {
+          setCookie('cartId', response['cart_id'], { path: '/' });
+        });
+    }
+  });
 
   return (
     <Container maxWidth="lg">
