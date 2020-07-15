@@ -32,6 +32,16 @@ class Client {
       }
     })
   }
+
+  addProductToCart(cartId: string, productId: number): Promise<Response> {
+    return fetch(`${this.baseUrl}/carts/${cartId}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/xenelectronic.v1+json'
+      },
+      body: JSON.stringify({ product_id: productId }),
+    })
+  }
 }
 
 export default new Client(config.API_BASE_URL);

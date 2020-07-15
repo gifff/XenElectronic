@@ -13,6 +13,7 @@ import { makeStyles, CircularProgress } from '@material-ui/core';
 
 import Product from '../../lib/model/Product';
 import { useParams } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 
 interface Props {
   categoryId?: number
@@ -45,6 +46,7 @@ export default function ProductList(props: Props) {
   const [error, setError] = useState<Error | null>(null);
   const { categoryId: categoryIdParam } = useParams();
   const categoryId: number = isNaN(categoryIdParam) ? 0 : Number(categoryIdParam);
+  const [{ cartId }] = useCookies(['cartId']);
 
   useEffect(() => {
     if (!isLoading && categoryId > 0 && previousCategoryId !== categoryId) {
@@ -76,6 +78,10 @@ export default function ProductList(props: Props) {
     }
   });
 
+  const addProductToCart = (productId: number) => {
+    client.addProductToCart(cartId, productId)
+  };
+
   const loadingContent = (
     <Grid item xs={12}>
       <CircularProgress />
@@ -104,7 +110,7 @@ export default function ProductList(props: Props) {
           </CardContent>
         </CardActionArea>
         <CardActions>
-          <Button size="small" color="primary">
+          <Button size="small" color="primary" onClick={() => addProductToCart(product.id)}>
             Add to Cart
           </Button>
         </CardActions>
