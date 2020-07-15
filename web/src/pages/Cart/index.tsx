@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import client from '../../lib/client';
 
 import Button from '@material-ui/core/Button';
@@ -15,11 +15,12 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, CircularProgress } from '@material-ui/core';
+import { useCookies } from 'react-cookie';
 import { useSnackbar } from 'notistack';
+import { Map as ImmutableMap } from 'immutable';
 
 import CartItem from '../../lib/model/CartItem';
 import Product from '../../lib/model/Product';
-import { useCookies } from 'react-cookie';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -35,18 +36,57 @@ const currencyFormatter = new Intl.NumberFormat('id-ID', {
   currency: 'IDR',
 })
 
+enum ActionType {
+  Delete,
+  MarkAsDeleted,
+  MarkAsFetched,
+}
+
+class Action {
+  type: ActionType;
+  cartItemId: number;
+  constructor(type: ActionType, cartItemId?: number) {
+    this.type = type;
+    this.cartItemId = cartItemId !== undefined ? cartItemId : 0;
+  }
+}
+
+class StateStore {
+  needsFetch: boolean;
+  cartItemIdsInDeletion: ImmutableMap<number, boolean>;
+  constructor(needsFetch: boolean, cartItemIdsInDeletion: ImmutableMap<number, boolean>) {
+    this.needsFetch = needsFetch;
+    this.cartItemIdsInDeletion = cartItemIdsInDeletion;
+  }
+}
+
+const initialState: StateStore = new StateStore(true, ImmutableMap<number, boolean>());
+function reducer(state: StateStore, action: Action): StateStore {
+  switch (action.type) {
+    case ActionType.Delete:
+      return new StateStore(state.needsFetch, state.cartItemIdsInDeletion.set(action.cartItemId, false));
+    case ActionType.MarkAsDeleted:
+      const newCartItemIdsInDeletion = state.cartItemIdsInDeletion.set(action.cartItemId, true);
+      const isAllDeletionFinished = newCartItemIdsInDeletion.reduce((isAllFinished, isFinished) => isAllFinished && isFinished, true);
+      return new StateStore(isAllDeletionFinished, isAllDeletionFinished ? ImmutableMap<number, boolean>() : newCartItemIdsInDeletion);
+    case ActionType.MarkAsFetched:
+      return new StateStore(false, state.cartItemIdsInDeletion);
+    default:
+      throw new Error();
+  }
+}
+
 export default function Cart() {
   const classes = useStyles();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [cartItemIdInDeletion, setCartItemIdInDeletion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFetched, setIsFetched] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [{ cartId }] = useCookies(['cartId']);
 
   useEffect(() => {
-    if (!isLoading && !isFetched) {
+    if (!isLoading && state.needsFetch) {
       setIsLoading(true);
       setError(null);
       client.listProductsInCart(cartId)
@@ -64,7 +104,17 @@ export default function Cart() {
                 cartItem.product.photo,
                 cartItem.product.price,
               )
-            )));
+            ))
+              .sort((a, b) => {
+                if (a.product.name < b.product.name) {
+                  return -1;
+                } else if (a.product.name > b.product.name) {
+                  return 1;
+                } else {
+                  return a.product.id - b.product.id;
+                }
+              })
+            );
           }
         })
         .catch(error => {
@@ -73,27 +123,15 @@ export default function Cart() {
         })
         .finally(() => {
           setIsLoading(false);
-          setIsFetched(true);
+          dispatch(new Action(ActionType.MarkAsFetched));
         })
     }
-  }, [isLoading, isFetched, cartId]);
+  }, [isLoading, state.needsFetch, cartId]);
 
   const removeProductFromCart = (productId: number, cartItemId: number) => {
-    if (cartItemIdInDeletion !== null) {
-      enqueueSnackbar("Too fast! you're still deleting another one", {
-        autoHideDuration: 3000,
-        key: 'concurrent_delete',
-        variant: 'warning',
-        preventDuplicate: true,
-      })
-      return;
-    }
-    setCartItemIdInDeletion(cartItemId);
+    dispatch(new Action(ActionType.Delete, cartItemId));
     client.removeProductFromCart(cartId, productId)
       .then(response => {
-        if (response.ok) {
-          setIsFetched(false);
-        }
       })
       .catch(() => {
         enqueueSnackbar('Sorry, something is broken', {
@@ -103,8 +141,7 @@ export default function Cart() {
         })
       })
       .finally(() => {
-        setCartItemIdInDeletion(null);
-        closeSnackbar('concurrent_delete');
+        dispatch(new Action(ActionType.MarkAsDeleted, cartItemId));
       })
   }
 
@@ -137,7 +174,7 @@ export default function Cart() {
                   <TableCell align="left">{currencyFormatter.format(cartItem.product.price)}</TableCell>
                   <TableCell align="right" size="small">
                     {
-                      cartItemIdInDeletion === cartItem.id ? <CircularProgress color="secondary" /> : (
+                      state.cartItemIdsInDeletion.has(cartItem.id) ? <CircularProgress color="secondary" /> : (
                         <IconButton onClick={() => removeProductFromCart(cartItem.product.id, cartItem.id)}>
                           <DeleteIcon />
                         </IconButton>
