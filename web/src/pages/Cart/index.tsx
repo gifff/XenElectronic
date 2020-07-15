@@ -146,7 +146,7 @@ export default function Cart() {
   }
 
   const loadingContent = (
-    <Grid item xs={12}>
+    <Grid item container justify="center" xs={12}>
       <CircularProgress />
     </Grid>
   );
@@ -193,7 +193,6 @@ export default function Cart() {
         </TableContainer>
       </Grid>
       <Grid item container xs={12} justify="flex-end" className={classes.checkoutWrapper}>
-        {/* <Grid container direction="" */}
         <Button
           variant="contained"
           color="primary"
@@ -207,7 +206,7 @@ export default function Cart() {
   );
 
   const errorContent = (
-    <Grid item xs={12}>
+    <Grid item container justify="center" xs={12}>
       <Typography variant="body1" color="error">Sorry, something is broken</Typography>
     </Grid>
   );
