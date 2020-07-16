@@ -86,5 +86,36 @@ func (repo *orderRepository) CheckoutFromCart(cartID, customerName, customerEmai
 }
 
 func (repo *orderRepository) FetchOne(orderID string) (entity.Order, error) {
-	return entity.Order{}, nil
+	order := entity.Order{}
+
+	row := repo.db.QueryRowx("SELECT id, customer_name, customer_email, customer_address FROM orders WHERE id = $1", orderID)
+	err := row.Scan(&order.ID, &order.CustomerName, &order.CustomerEmail, &order.CustomerAddress)
+	if err != nil {
+		return entity.Order{}, err
+	}
+
+	rows, err := repo.db.Queryx("SELECT id, order_id, product_id, name, description, photo, price FROM order_items WHERE order_id = $1", orderID)
+	if err != nil {
+		return entity.Order{}, err
+	}
+
+	for rows.Next() {
+		cartItem := entity.CartItem{}
+		err := rows.Scan(
+			&cartItem.ID,
+			&cartItem.CartID,
+			&cartItem.Product.ID,
+			&cartItem.Product.Name,
+			&cartItem.Product.Description,
+			&cartItem.Product.Photo,
+			&cartItem.Product.Price,
+		)
+		if err != nil {
+			return entity.Order{}, err
+		}
+
+		order.CartItems = append(order.CartItems, cartItem)
+	}
+
+	return order, nil
 }

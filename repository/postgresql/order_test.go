@@ -238,3 +238,122 @@ func TestCheckoutFromCart(t *testing.T) {
 		})
 	}
 }
+
+func TestFetchOne(t *testing.T) {
+	orderID := "deadbeef-dead-beef-dead-beefdeadbeef"
+
+	testCases := []struct {
+		name      string
+		orderID   string
+		dbMockFn  func(mock sqlmock.Sqlmock)
+		wantOrder entity.Order
+		wantErr   error
+	}{
+		{
+			name:    "success",
+			orderID: orderID,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT id, customer_name, customer_email, customer_address FROM orders WHERE id = $1").
+					WithArgs(orderID).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id", "customer_name", "customer_email", "customer_address"}).
+							AddRow(orderID, "John Doe", "john.doe@example.com", "1 Hacker Way"),
+					)
+				mock.ExpectQuery("SELECT id, order_id, product_id, name, description, photo, price FROM order_items WHERE order_id = $1").
+					WithArgs(orderID).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id", "order_id", "product_id", "name", "description", "photo", "price"}).
+							AddRow("3300", orderID, "2020", "iPhone 11", "Apple Smartphone", "", "13000000").
+							AddRow("3330", orderID, "2222", "Samsung Galaxy S20 Ultra", "Samsung Smartphone", "", "20000000").
+							AddRow("3333", orderID, "2000", "iPhone X", "Apple Smartphone", "", "10000000"),
+					)
+			},
+			wantOrder: entity.Order{
+				ID:              orderID,
+				CustomerName:    "John Doe",
+				CustomerEmail:   "john.doe@example.com",
+				CustomerAddress: "1 Hacker Way",
+				CartItems: []entity.CartItem{
+					{
+						ID:     3300,
+						CartID: orderID,
+						Product: entity.Product{
+							ID:          2020,
+							Name:        "iPhone 11",
+							Description: "Apple Smartphone",
+							Price:       13000000,
+						},
+					},
+					{
+						ID:     3330,
+						CartID: orderID,
+						Product: entity.Product{
+							ID:          2222,
+							Name:        "Samsung Galaxy S20 Ultra",
+							Description: "Samsung Smartphone",
+							Price:       20000000,
+						},
+					},
+					{
+						ID:     3333,
+						CartID: orderID,
+						Product: entity.Product{
+							ID:          2000,
+							Name:        "iPhone X",
+							Description: "Apple Smartphone",
+							Price:       10000000,
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "error when select from orders",
+			orderID: orderID,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT id, customer_name, customer_email, customer_address FROM orders WHERE id = $1").
+					WithArgs(orderID).
+					WillReturnError(sql.ErrConnDone)
+			},
+			wantOrder: entity.Order{},
+			wantErr:   sql.ErrConnDone,
+		},
+		{
+			name:    "error when select from order_items",
+			orderID: orderID,
+			dbMockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT id, customer_name, customer_email, customer_address FROM orders WHERE id = $1").
+					WithArgs(orderID).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id", "customer_name", "customer_email", "customer_address"}).
+							AddRow(orderID, "John Doe", "john.doe@example.com", "1 Hacker Way"),
+					)
+				mock.ExpectQuery("SELECT id, order_id, product_id, name, description, photo, price FROM order_items WHERE order_id = $1").
+					WithArgs(orderID).
+					WillReturnError(sql.ErrConnDone)
+			},
+			wantOrder: entity.Order{},
+			wantErr:   sql.ErrConnDone,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := newDBMock()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+
+			if tc.dbMockFn != nil {
+				tc.dbMockFn(mock)
+			}
+
+			repo := NewOrder(db, uuidGeneratorMock(tc.orderID))
+			gotOrder, gotErr := repo.FetchOne(tc.orderID)
+
+			assert.Equal(t, tc.wantErr, gotErr)
+			assert.Equal(t, tc.wantOrder, gotOrder)
+		})
+	}
+}
