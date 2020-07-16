@@ -5,19 +5,22 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { SnackbarProvider } from 'notistack'
+import { BrowserRouter as Router } from 'react-router-dom';
 
 ReactDOM.render(
   <React.StrictMode>
-    <CookiesProvider>
-      <SnackbarProvider
-        maxSnack={3}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}>
-        <App />
-      </SnackbarProvider>
-    </CookiesProvider>
+    <Router>
+      <CookiesProvider>
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}>
+          <App />
+        </SnackbarProvider>
+      </CookiesProvider>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

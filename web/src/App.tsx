@@ -11,9 +11,10 @@ import ResponsiveDrawer from './components/ResponsiveDrawer';
 import { useCookies } from 'react-cookie';
 import { makeStyles } from '@material-ui/core';
 import {
-  BrowserRouter as Router,
   Route,
   Switch,
+  useRouteMatch,
+  useLocation,
 } from 'react-router-dom';
 
 import HomeIcon from '@material-ui/icons/Home';
@@ -36,9 +37,12 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 function App() {
+  const categoryRouteMatch = useRouteMatch<{ categoryId: string }>('/categories/:categoryId');
+  const location = useLocation();
+  const categoryIdFromRoute = categoryRouteMatch !== null ? Number(categoryRouteMatch.params.categoryId) : 0
   const [cookies, setCookie] = useCookies(['cartId']);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<number>(!isNaN(categoryIdFromRoute) ? categoryIdFromRoute : 0);
   const classes = useStyles();
 
   useEffect(() => {
@@ -66,11 +70,17 @@ function App() {
   const drawer = (
     <React.Fragment>
       <List>
-        <ListItemLink to="/" key={"Home"}>
+        <ListItemLink
+          to="/"
+          selected={location.pathname === '/'}
+          key={"Home"}>
           <ListItemIcon><HomeIcon /></ListItemIcon>
           <ListItemText primary={"Home"} />
         </ListItemLink>
-        <ListItemLink to="/cart" key={"Cart"}>
+        <ListItemLink
+          to="/cart"
+          selected={location.pathname === '/cart'}
+          key={"Cart"}>
           <ListItemIcon><ShoppingCartIcon /></ListItemIcon>
           <ListItemText primary={"Cart"} />
         </ListItemLink>
@@ -95,29 +105,27 @@ function App() {
   );
 
   return (
-    <Router>
-      <Container maxWidth="lg" className={classes.container}>
-        <ResponsiveDrawer title="XenElectronic" drawer={drawer}>
-          <Switch>
-            <Route exact path="/">
-              <Typography variant="body1">Select category first</Typography>
-            </Route>
-            <Route exact path="/cart">
-              <Cart />
-            </Route>
-            <Route path="/orders/:orderId">
-              <ViewOrder />
-            </Route>
-            <Route path="/categories/:categoryId">
-              <ProductList />
-            </Route>
-            <Route path="*">
-              <Typography variant="body1">The page you're looking for is not found</Typography>
-            </Route>
-          </Switch>
-        </ResponsiveDrawer>
-      </Container>
-    </Router>
+    <Container maxWidth="lg" className={classes.container}>
+      <ResponsiveDrawer title="XenElectronic" drawer={drawer}>
+        <Switch>
+          <Route exact path="/">
+            <Typography variant="body1">Select category first</Typography>
+          </Route>
+          <Route exact path="/cart">
+            <Cart />
+          </Route>
+          <Route path="/orders/:orderId">
+            <ViewOrder />
+          </Route>
+          <Route path="/categories/:categoryId">
+            <ProductList />
+          </Route>
+          <Route path="*">
+            <Typography variant="body1">The page you're looking for is not found</Typography>
+          </Route>
+        </Switch>
+      </ResponsiveDrawer>
+    </Container>
   );
 }
 
