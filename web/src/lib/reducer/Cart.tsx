@@ -18,9 +18,30 @@ export class Action {
 export class StateStore {
   needsFetch: boolean;
   cartItemIdsInDeletion: ImmutableMap<number, boolean>;
+  // customerData: ImmutableMap<number, boolean>;
+
   constructor(needsFetch: boolean, cartItemIdsInDeletion: ImmutableMap<number, boolean>) {
     this.needsFetch = needsFetch;
     this.cartItemIdsInDeletion = cartItemIdsInDeletion;
+  }
+
+  withNeedsFetch(needsFetch: boolean): StateStore {
+    this.needsFetch = needsFetch;
+    return this;
+  }
+
+  withCartItemIdsInDeletion(cartItemIdsInDeletion: ImmutableMap<number, boolean>): StateStore {
+    this.cartItemIdsInDeletion = cartItemIdsInDeletion;
+    return this;
+  }
+
+  static fromPrevious(state: StateStore): StateStore {
+    const newState = new StateStore(
+      state.needsFetch,
+      state.cartItemIdsInDeletion,
+    );
+
+    return newState
   }
 }
 

@@ -61,6 +61,21 @@ class Client {
     })
   }
 
+  createOrder(cartId: string, customerName: string, customerEmail: string, customerAddress: string): Promise<Response> {
+    return fetch(`${this.baseUrl}/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/xenelectronic.v1+json'
+      },
+      body: JSON.stringify({
+        cart_id: cartId,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_address: customerAddress,
+      }),
+    })
+  }
+
   viewOrder(orderId: string): Promise<Response> {
     return fetch(`${this.baseUrl}/orders/${orderId}`, {
       method: 'GET',

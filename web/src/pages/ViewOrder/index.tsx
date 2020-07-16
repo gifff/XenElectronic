@@ -17,6 +17,7 @@ import { useParams } from 'react-router-dom';
 import CartItem from '../../lib/model/CartItem';
 import Product from '../../lib/model/Product';
 import Order from '../../lib/model/Order';
+import OrderResponse from '../../lib/responses/OrderResponse';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -28,30 +29,6 @@ const currencyFormatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR',
 })
-
-interface CartItemResponse {
-  id: number;
-  productId: number;
-  product: {
-    id: number | undefined;
-    categoryId: number | undefined;
-    name: string | undefined;
-    description: string | undefined;
-    photo: string | undefined;
-    price: number | undefined;
-  };
-}
-
-interface Response {
-  id: string | undefined;
-  customer_name: string | undefined;
-  customer_email: string | undefined;
-  customer_address: string | undefined;
-  payment_method: string | undefined;
-  payment_account_number: string | undefined;
-  payment_amount: number | undefined;
-  cart_items: CartItemResponse[] | undefined;
-}
 
 export default function ViewOrder() {
   const classes = useStyles();
@@ -73,7 +50,7 @@ export default function ViewOrder() {
 
           return response.json();
         })
-        .then((response: Response) => {
+        .then((response: OrderResponse) => {
           let cartItems: CartItem[] = new Array<CartItem>();
           if (Array.isArray(response.cart_items)) {
             cartItems = response.cart_items.map(cartItem => new CartItem(
