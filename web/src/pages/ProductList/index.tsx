@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import client from '../../lib/client';
 
 import Button from '@material-ui/core/Button';
@@ -11,9 +11,17 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, CircularProgress } from '@material-ui/core';
 
-import Product from '../../lib/model/Product';
 import { useParams } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
+import { useSnackbar } from 'notistack';
+
+import Product from '../../lib/model/Product';
+import {
+  Action,
+  ActionType,
+  initialState,
+  reducer,
+} from '../../lib/reducer/ProductList';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -40,9 +48,11 @@ export default function ProductList() {
   const [previousCategoryId, setPreviousCategoryId] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const { categoryId: categoryIdParam } = useParams();
   const categoryId: number = isNaN(categoryIdParam) ? 0 : Number(categoryIdParam);
   const [{ cartId }] = useCookies(['cartId']);
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (!isLoading && categoryId > 0 && previousCategoryId !== categoryId) {
@@ -75,7 +85,33 @@ export default function ProductList() {
   }, [isLoading, categoryId, previousCategoryId]);
 
   const addProductToCart = (productId: number) => {
+    dispatch(new Action(ActionType.AddToCart, productId));
     client.addProductToCart(cartId, productId)
+      .then(response => {
+        if (response.ok) {
+          enqueueSnackbar('Product is added to cart', {
+            autoHideDuration: 3000,
+            variant: 'success',
+            preventDuplicate: true,
+          })
+        } else {
+          enqueueSnackbar('Failed when adding to cart', {
+            autoHideDuration: 3000,
+            variant: 'error',
+            preventDuplicate: true,
+          })
+        }
+      })
+      .catch(error => {
+        enqueueSnackbar('Sorry, something is broken', {
+          autoHideDuration: 3000,
+          variant: 'error',
+          preventDuplicate: true,
+        })
+      })
+      .finally(() => {
+        dispatch(new Action(ActionType.MarkAsAdded, productId));
+      })
   };
 
   const loadingContent = (
@@ -109,6 +145,9 @@ export default function ProductList() {
           <Button size="small" color="primary" onClick={() => addProductToCart(product.id)}>
             Add to Cart
           </Button>
+          {
+            (state.inFlightAddToCartRequests.has(product.id)) ? <CircularProgress color="secondary" size="28px" /> : null
+          }
         </CardActions>
       </Card>
     </Grid>
