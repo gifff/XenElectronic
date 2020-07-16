@@ -9,6 +9,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import Typography from '@material-ui/core/Typography';
 import ResponsiveDrawer from './components/ResponsiveDrawer';
 import { useCookies } from 'react-cookie';
+import { makeStyles } from '@material-ui/core';
 import {
   BrowserRouter as Router,
   Route,
@@ -26,10 +27,18 @@ import client from './lib/client';
 import Category from './lib/model/Category';
 import Cart from './pages/Cart';
 
+const useStyles = makeStyles((theme) => ({
+  container: {
+    paddingBottom: theme.spacing(8),
+    paddingTop: theme.spacing(2),
+  },
+}))
+
 function App() {
   const [cookies, setCookie] = useCookies(['cartId']);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const classes = useStyles();
 
   useEffect(() => {
     if (cookies.cartId === null || cookies.cartId === undefined || cookies.cartId === '') {
@@ -86,7 +95,7 @@ function App() {
 
   return (
     <Router>
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" className={classes.container}>
         <ResponsiveDrawer title="XenElectronic" drawer={drawer}>
           <Switch>
             <Route exact path="/">

@@ -7,9 +7,10 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles, CircularProgress } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 
 import { useParams } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
