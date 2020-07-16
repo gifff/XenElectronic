@@ -84,3 +84,7 @@ func (repo *orderRepository) CheckoutFromCart(cartID, customerName, customerEmai
 
 	return order, nil
 }
+
+func (repo *orderRepository) FetchOne(orderID string) (entity.Order, error) {
+	return entity.Order{}, nil
+}

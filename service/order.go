@@ -31,3 +31,7 @@ func (c *Order) Checkout(cartID, customerName, customerEmail, customerAddress st
 
 	return order, nil
 }
+
+func (c *Order) View(orderID string) (entity.Order, error) {
+	return c.orderRepo.FetchOne(orderID)
+}

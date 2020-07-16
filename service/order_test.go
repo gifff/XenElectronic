@@ -121,3 +121,97 @@ func TestCheckout_Error(t *testing.T) {
 	assert.Equal(t, errors.New("unable to connect to database"), gotErr)
 	assert.Equal(t, wantOrderID, gotOrderID)
 }
+
+func TestView(t *testing.T) {
+	orderRepo := &mocks.OrderRepository{}
+	s := service.NewOrder(orderRepo)
+
+	orderID := "deadbeef-dead-beef-dead-beefdeadbeef"
+
+	orderRepo.On("FetchOne", orderID).Return(entity.Order{
+		ID:                   orderID,
+		CustomerName:         "John Doe",
+		CustomerEmail:        "john.doe@example.com",
+		CustomerAddress:      "1 Hacker Way",
+		PaymentAmount:        43000000,
+		PaymentMethod:        "Bank Transfer",
+		PaymentAccountNumber: "232 555 8965",
+		CartItems: []entity.CartItem{
+			{
+				ID:     3300,
+				CartID: orderID,
+				Product: entity.Product{
+					ID:          2020,
+					Name:        "iPhone 11",
+					Description: "Apple Smartphone",
+					Price:       13000000,
+				},
+			},
+			{
+				ID:     3330,
+				CartID: orderID,
+				Product: entity.Product{
+					ID:          2222,
+					Name:        "Samsung Galaxy S20 Ultra",
+					Description: "Samsung Smartphone",
+					Price:       20000000,
+				},
+			},
+			{
+				ID:     3333,
+				CartID: orderID,
+				Product: entity.Product{
+					ID:          2000,
+					Name:        "iPhone X",
+					Description: "Apple Smartphone",
+					Price:       10000000,
+				},
+			},
+		},
+	}, nil)
+	gotOrderID, gotErr := s.View(orderID)
+	wantOrderID := entity.Order{
+		ID:                   orderID,
+		CustomerName:         "John Doe",
+		CustomerEmail:        "john.doe@example.com",
+		CustomerAddress:      "1 Hacker Way",
+		PaymentAmount:        43000000,
+		PaymentMethod:        "Bank Transfer",
+		PaymentAccountNumber: "232 555 8965",
+		CartItems: []entity.CartItem{
+			{
+				ID:     3300,
+				CartID: orderID,
+				Product: entity.Product{
+					ID:          2020,
+					Name:        "iPhone 11",
+					Description: "Apple Smartphone",
+					Price:       13000000,
+				},
+			},
+			{
+				ID:     3330,
+				CartID: orderID,
+				Product: entity.Product{
+					ID:          2222,
+					Name:        "Samsung Galaxy S20 Ultra",
+					Description: "Samsung Smartphone",
+					Price:       20000000,
+				},
+			},
+			{
+				ID:     3333,
+				CartID: orderID,
+				Product: entity.Product{
+					ID:          2000,
+					Name:        "iPhone X",
+					Description: "Apple Smartphone",
+					Price:       10000000,
+				},
+			},
+		},
+	}
+
+	assert.Nil(t, gotErr)
+	assert.Equal(t, wantOrderID, gotOrderID)
+}
