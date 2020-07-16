@@ -19,13 +19,14 @@ import {
 import HomeIcon from '@material-ui/icons/Home';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 
+import Cart from './pages/Cart';
+import ViewOrder from './pages/ViewOrder';
 import ProductList from './pages/ProductList';
 
 import ListItemLink from './components/ListItemLink';
 
 import client from './lib/client';
 import Category from './lib/model/Category';
-import Cart from './pages/Cart';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -103,6 +104,9 @@ function App() {
             </Route>
             <Route exact path="/cart">
               <Cart />
+            </Route>
+            <Route path="/orders/:orderId">
+              <ViewOrder />
             </Route>
             <Route path="/categories/:categoryId">
               <ProductList />

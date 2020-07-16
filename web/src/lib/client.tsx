@@ -60,6 +60,15 @@ class Client {
       },
     })
   }
+
+  viewOrder(orderId: string): Promise<Response> {
+    return fetch(`${this.baseUrl}/orders/${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/xenelectronic.v1+json'
+      }
+    })
+  }
 }
 
 export default new Client(config.API_BASE_URL);

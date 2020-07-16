@@ -18,6 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 import { useCookies } from 'react-cookie';
 import { useSnackbar } from 'notistack';
+import { Link as RouterLink } from 'react-router-dom';
 
 import CartItem from '../../lib/model/CartItem';
 import Product from '../../lib/model/Product';
@@ -161,6 +162,8 @@ export default function Cart() {
           color="primary"
           size="large"
           startIcon={<LocalMallIcon />}
+          component={RouterLink}
+          to="/checkout"
         >
           Checkout
         </Button>
