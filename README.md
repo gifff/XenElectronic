@@ -20,6 +20,17 @@ This is an MVP web application built on top of React which satisfies the followi
 - NodeJS 12.18
 - npm
 
+### Setup Environment
+
+Execute the following command to setup development environment and installing project dependencies:
+
+```shell
+$ make setup
+```
+
+It will create symlink from `etc/git-pre-push` file to `.git/hooks/pre-push` to execute `make test`
+every time you push to upstream.
+
 ### Setup Database
 
 To setup database, first you have to create a new database in your PostgreSQL server.
@@ -93,6 +104,20 @@ BROWSER=none
 ```
 
 then execute `npm start`.
+
+## Shortcuts
+
+A single command to test, build, and run server:
+
+```shell
+$ make
+```
+
+To serve the frontend:
+
+```shell
+$ make run-frontend
+```
 
 ## Running the tests
 

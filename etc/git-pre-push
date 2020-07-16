@@ -1,0 +1,6 @@
+#!/bin/sh
+
+remote="$1"
+url="$2"
+
+make test
