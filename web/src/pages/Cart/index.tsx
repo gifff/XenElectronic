@@ -17,10 +17,15 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles, CircularProgress } from '@material-ui/core';
 import { useCookies } from 'react-cookie';
 import { useSnackbar } from 'notistack';
-import { Map as ImmutableMap } from 'immutable';
 
 import CartItem from '../../lib/model/CartItem';
 import Product from '../../lib/model/Product';
+import {
+  Action,
+  ActionType,
+  initialState,
+  reducer,
+} from '../../lib/reducer/Cart';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -35,46 +40,6 @@ const currencyFormatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR',
 })
-
-enum ActionType {
-  Delete,
-  MarkAsDeleted,
-  MarkAsFetched,
-}
-
-class Action {
-  type: ActionType;
-  cartItemId: number;
-  constructor(type: ActionType, cartItemId?: number) {
-    this.type = type;
-    this.cartItemId = cartItemId !== undefined ? cartItemId : 0;
-  }
-}
-
-class StateStore {
-  needsFetch: boolean;
-  cartItemIdsInDeletion: ImmutableMap<number, boolean>;
-  constructor(needsFetch: boolean, cartItemIdsInDeletion: ImmutableMap<number, boolean>) {
-    this.needsFetch = needsFetch;
-    this.cartItemIdsInDeletion = cartItemIdsInDeletion;
-  }
-}
-
-const initialState: StateStore = new StateStore(true, ImmutableMap<number, boolean>());
-function reducer(state: StateStore, action: Action): StateStore {
-  switch (action.type) {
-    case ActionType.Delete:
-      return new StateStore(state.needsFetch, state.cartItemIdsInDeletion.set(action.cartItemId, false));
-    case ActionType.MarkAsDeleted:
-      const newCartItemIdsInDeletion = state.cartItemIdsInDeletion.set(action.cartItemId, true);
-      const isAllDeletionFinished = newCartItemIdsInDeletion.reduce((isAllFinished, isFinished) => isAllFinished && isFinished, true);
-      return new StateStore(isAllDeletionFinished, isAllDeletionFinished ? ImmutableMap<number, boolean>() : newCartItemIdsInDeletion);
-    case ActionType.MarkAsFetched:
-      return new StateStore(false, state.cartItemIdsInDeletion);
-    default:
-      throw new Error();
-  }
-}
 
 export default function Cart() {
   const classes = useStyles();
