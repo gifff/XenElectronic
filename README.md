@@ -153,6 +153,14 @@ Or, you can also access the embedded documentation here:
 
 https://xenelectronic.herokuapp.com/docs
 
+### API Generation
+
+The server is generated using [go-swagger](https://goswagger.io) from `swagger.yml`. To do that, execute the following command:
+
+```shell
+$ swagger generate server -A xenelectronic -f ./swagger.yml
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
