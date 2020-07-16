@@ -193,6 +193,27 @@ paths:
           description: error
           schema:
             $ref: "#/definitions/Error"
+  /orders/{orderId}:
+    get:
+      description: View order details
+      tags:
+        - orders
+      operationId: viewOneOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: Returned one order
+          schema:
+            $ref: "#/definitions/Order"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
 
 definitions:
   Category:

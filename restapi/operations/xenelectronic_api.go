@@ -66,6 +66,9 @@ func NewXenelectronicAPI(spec *loads.Document) *XenelectronicAPI {
 		CartsRemoveOneProductFromCartHandler: carts.RemoveOneProductFromCartHandlerFunc(func(params carts.RemoveOneProductFromCartParams) middleware.Responder {
 			return middleware.NotImplemented("operation carts.RemoveOneProductFromCart has not yet been implemented")
 		}),
+		OrdersViewOneOrderHandler: orders.ViewOneOrderHandlerFunc(func(params orders.ViewOneOrderParams) middleware.Responder {
+			return middleware.NotImplemented("operation orders.ViewOneOrder has not yet been implemented")
+		}),
 	}
 }
 
@@ -113,6 +116,8 @@ type XenelectronicAPI struct {
 	CategoriesListProductsOfCategoryHandler categories.ListProductsOfCategoryHandler
 	// CartsRemoveOneProductFromCartHandler sets the operation handler for the remove one product from cart operation
 	CartsRemoveOneProductFromCartHandler carts.RemoveOneProductFromCartHandler
+	// OrdersViewOneOrderHandler sets the operation handler for the view one order operation
+	OrdersViewOneOrderHandler orders.ViewOneOrderHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -199,6 +204,9 @@ func (o *XenelectronicAPI) Validate() error {
 	}
 	if o.CartsRemoveOneProductFromCartHandler == nil {
 		unregistered = append(unregistered, "carts.RemoveOneProductFromCartHandler")
+	}
+	if o.OrdersViewOneOrderHandler == nil {
+		unregistered = append(unregistered, "orders.ViewOneOrderHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -316,6 +324,10 @@ func (o *XenelectronicAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/carts/{cart_id}/products/{product_id}"] = carts.NewRemoveOneProductFromCart(o.context, o.CartsRemoveOneProductFromCartHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/orders/{orderId}"] = orders.NewViewOneOrder(o.context, o.OrdersViewOneOrderHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

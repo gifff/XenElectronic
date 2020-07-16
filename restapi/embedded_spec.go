@@ -306,6 +306,38 @@ func init() {
           }
         }
       }
+    },
+    "/orders/{orderId}": {
+      "get": {
+        "description": "View order details",
+        "tags": [
+          "orders"
+        ],
+        "operationId": "viewOneOrder",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "orderId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned one order",
+            "schema": {
+              "$ref": "#/definitions/Order"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -808,6 +840,38 @@ func init() {
         "responses": {
           "201": {
             "description": "Created new order from cart",
+            "schema": {
+              "$ref": "#/definitions/Order"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/orders/{orderId}": {
+      "get": {
+        "description": "View order details",
+        "tags": [
+          "orders"
+        ],
+        "operationId": "viewOneOrder",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "orderId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returned one order",
             "schema": {
               "$ref": "#/definitions/Order"
             }
