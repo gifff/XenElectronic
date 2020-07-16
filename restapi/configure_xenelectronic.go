@@ -80,34 +80,7 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 			return orders.NewCheckoutDefault(500).WithPayload(formatError(1000, err))
 		}
 
-		custEmail := strfmt.Email(order.CustomerEmail)
-		payload := &models.Order{
-			ID:                   strfmt.UUID(order.ID),
-			CustomerName:         &order.CustomerName,
-			CustomerEmail:        &custEmail,
-			CustomerAddress:      &order.CustomerAddress,
-			PaymentAmount:        order.PaymentAmount,
-			PaymentMethod:        order.PaymentMethod,
-			PaymentAccountNumber: order.PaymentAccountNumber,
-			CartItems:            make(models.CartItems, len(order.CartItems)),
-		}
-		for i := range order.CartItems {
-			p := &models.Product{
-				ID:          order.CartItems[i].Product.ID,
-				CategoryID:  &order.CartItems[i].Product.CategoryID,
-				Name:        &order.CartItems[i].Product.Name,
-				Description: &order.CartItems[i].Product.Description,
-				Photo:       order.CartItems[i].Product.Photo,
-				Price:       &order.CartItems[i].Product.Price,
-			}
-
-			payload.CartItems[i] = &models.CartItem{
-				ID:        order.CartItems[i].ID,
-				Product:   p,
-				ProductID: &order.CartItems[i].Product.ID,
-			}
-		}
-		return orders.NewCheckoutCreated().WithPayload(payload)
+		return orders.NewCheckoutCreated().WithPayload(transformOrder(order))
 	})
 
 	api.CartsCreateCartHandler = carts.CreateCartHandlerFunc(func(params carts.CreateCartParams) middleware.Responder {
@@ -195,6 +168,15 @@ func configureAPI(api *operations.XenelectronicAPI) http.Handler {
 		}
 
 		return carts.NewRemoveOneProductFromCartNoContent()
+	})
+
+	api.OrdersViewOneOrderHandler = orders.ViewOneOrderHandlerFunc(func(params orders.ViewOneOrderParams) middleware.Responder {
+		order, err := OrderService.View(params.OrderID.String())
+		if err != nil {
+			return orders.NewViewOneOrderDefault(500).WithPayload(formatError(1000, err))
+		}
+
+		return orders.NewViewOneOrderOK().WithPayload(transformOrder(order))
 	})
 
 	api.PreServerShutdown = func() {}
