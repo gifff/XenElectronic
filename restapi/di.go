@@ -1,6 +1,9 @@
 package restapi
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/gifff/xenelectronic/contract"
 	"github.com/gifff/xenelectronic/repository/postgresql"
 	"github.com/gifff/xenelectronic/service"
@@ -29,7 +32,11 @@ func (u uuidGenerator) GenerateV4() string {
 }
 
 func configureDependencies() {
-	postgresDB := postgresql.New(appConfig.DSN)
+	postgresDB, err := postgresql.New(appConfig.DSN)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	CategoryRepository = postgresql.NewCategory(postgresDB)
 	CartRepository = postgresql.NewCart(postgresDB, uuidGenerator{})
 	OrderRepository = postgresql.NewOrder(postgresDB, uuidGenerator{})

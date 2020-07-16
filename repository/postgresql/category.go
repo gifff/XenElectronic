@@ -3,19 +3,8 @@ package postgresql
 import (
 	"github.com/gifff/xenelectronic/contract"
 	"github.com/gifff/xenelectronic/entity"
-	pgx "github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 )
-
-func New(connString string) *sqlx.DB {
-	config, err := pgx.ParseConfig(connString)
-	if err != nil {
-		panic(err)
-	}
-
-	return sqlx.NewDb(stdlib.OpenDB(*config), "pgx")
-}
 
 func NewCategory(db *sqlx.DB) contract.CategoryRepository {
 	return &categoryRepository{db}
